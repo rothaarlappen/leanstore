@@ -63,6 +63,7 @@ struct JobOptions {
 
    // file
    std::string filename;
+   std::string output_dir; // for stats, should already exist
    int fd = 0;
    uint64_t filesize = 10*1024ull*1024*1024;
    uint64_t offset = 0;
@@ -395,6 +396,8 @@ public:
 
       //std::cout << options.name << " ready: ops:" <<  ops << " bs: " << options.bs << std::endl;
 
+      std::vector<std::string> log_lines; 
+
       getSeconds();
       auto start = getSeconds();
 
@@ -524,7 +527,9 @@ public:
                ss << " sh: ";
                stats.fdatasyncHistEverySecond.writePercentiles(ss);
                */
-               std::cout << ss.str() << std::endl;;
+               std::cout << ss.str() << std::endl;
+               log_lines.push_back(ss.str());  
+               
                //options.statsWriter->write(ss.str());
             }
 
@@ -550,7 +555,13 @@ public:
       }
       ioChannel.printCounters(std::cout);
 
-      // 
+      std::ofstream log;
+      log.open(options.output_dir + std::to_string(this->genId) + "_log.csv", std::ios::out | std::ios::trunc);
+      for (auto& line: log_lines) {
+         log << line << std::endl;
+      }
+      log.close();
+
       return 0;
    }
 

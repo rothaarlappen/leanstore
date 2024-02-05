@@ -102,6 +102,7 @@ int main(int , char** ) {
    //std::string filename = getEnv("FILENAME",   "trtype=PCIe traddr=0000.87.00.0 ns=1;trtype=PCIe traddr=0000.88.00.0 ns=1;trtype=PCIe traddr=0000.c1.00.0 ns=1;trtype=PCIe traddr=0000.c2.00.0 ns=1");
    std::cout << "start" << std::endl;
    std::string filename = getEnvRequired("FILENAME");
+   std::string output_dir = getEnv("OUTPUT_DIR", "");
    std::string ioEngine = getEnv("IOENGINE", "auto");
    const int threads = getEnv("THREADS",1);
    const int runtimeLimit = getEnv("RUNTIME", 0);
@@ -136,6 +137,7 @@ int main(int , char** ) {
    std::cout << "INIT: " << init << std::endl;
    std::cout << "IO_DEPTH: " << ioOptions.iodepth << std::endl;
    std::cout << "IOENGING: " << ioEngine << std::endl;
+   std::cout << "OUTPUT_DIR" << output_dir << std::endl;
    
    std::cout << "WF_ON: " << writeFreqDist << std::endl;
    //std::cout << "WF_AREA: " << writeFrequencyAreaSize*100 << "%" << std::endl;
@@ -163,6 +165,7 @@ int main(int , char** ) {
    jobOptions.writePercent = writePercent;
    jobOptions.threads = threads;
    jobOptions.printEverySecond = true;
+   jobOptions.output_dir = output_dir;
 
    jobOptions.writeFreqDist = writeFreqDist;
    //jobOptions.writeFrequencyAreaSize = writeFrequencyAreaSize;
