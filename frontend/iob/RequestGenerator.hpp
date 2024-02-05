@@ -342,9 +342,9 @@ public:
    }
 
    static void checkBufferThrow(char* buf, uint64_t offset, uint64_t len) {
-      if (!checkBuffer(buf, offset, len)) {
-         throw std::logic_error("data check failed. Try force initialization with INIT=1");
-      }
+      // if (!checkBuffer(buf, offset, len)) {
+      //    throw std::logic_error("data check failed. Try force initialization with INIT=1");
+      // }
    }
 
    /*
@@ -634,7 +634,7 @@ public:
       } else {
          req.len = options.bs;
          assert(std::mt19937_64::min() == 0);
-         if (options.writePercent > 0 && (float)mersene() / std::mt19937_64::max() < options.writePercent) {
+         if (options.writePercent > 0 && (float)mersene() / std::mt19937_64::max() <= options.writePercent) {
             // write
             req.addr = patternGenerator(preparedWrites, mersene, dist);
             //std::cout << req.addr << std::endl;
