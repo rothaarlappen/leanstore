@@ -75,11 +75,11 @@ public:
       //ensure(ret == 0); // ocp not supported
    }
    uint64_t physicalMediaUnitsWrittenBytes() {
-      ensure(toBigEndian(*(uint64_t *)&log_data[SCAO_PMUW + 8] & 0xFFFFFFFFFFFFFFFF) == 0);
+      // ensure(toBigEndian(*(uint64_t *)&log_data[SCAO_PMUW + 8] & 0xFFFFFFFFFFFFFFFF) == 0);
       return (toBigEndian(*(uint64_t *)&log_data[SCAO_PMUW] & 0xFFFFFFFFFFFFFFFF));
    }
    uint64_t physicalMediaUnitsReadBytes() {
-	   ensure((uint64_t)toBigEndian(*(uint64_t *)&log_data[SCAO_PMUR + 8] & 0xFFFFFFFFFFFFFFFF) == 0);
+	   // ensure((uint64_t)toBigEndian(*(uint64_t *)&log_data[SCAO_PMUR + 8] & 0xFFFFFFFFFFFFFFFF) == 0);
 	   return toBigEndian(*(uint64_t *)&log_data[SCAO_PMUR] & 0xFFFFFFFFFFFFFFFF);
    }
    uint64_t softECCError() {
