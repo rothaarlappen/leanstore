@@ -92,7 +92,7 @@ LiburingChannel::LiburingChannel(RaidController<int>& raidCtl, IoOptions ioOptio
    struct nvme_id_ns ns;
    nvme_identify(raidCtl.device(0), 1, NVME_IDENTIFY_CNS_NS, NVME_CSI_NVM, &ns);
 	lba_sz = 1 << ns.lbaf[(ns.flbas & 0x0f)].ds;
-   
+
    io_uring_params iouParameters;
    memset(&iouParameters, 0, sizeof(iouParameters));
 	if (ioOptions.ioUringNVMePassthrough) {
@@ -107,9 +107,10 @@ LiburingChannel::LiburingChannel(RaidController<int>& raidCtl, IoOptions ioOptio
       // round robin the wq's
       iouParameters.wq_fd = dynamic_cast<LiburingChannel*>(env.channels[ env.channels.size() % ioOptions.ioUringShareWq ].get())->ring.ring_fd;
    }
-   std::cout << "io_uring parameters: sq_entries: " << iouParameters.sq_entries << " cq_entries: " << iouParameters.cq_entries 
-      << " flags: " << iouParameters.flags << " sq_thread_cpu: " << iouParameters.sq_thread_cpu << " sq_thread_idle: " << iouParameters.sq_thread_idle 
-      << " features: " << iouParameters.features << " wq_fd: "<<iouParameters.wq_fd << std::endl;
+   std::cout << "io_uring parameters: sq_entries: " << iouParameters.sq_entries << " cq_entries: " << iouParameters.cq_entries
+             << " flags: " << iouParameters.flags << " sq_thread_cpu: " << iouParameters.sq_thread_cpu
+             << " sq_thread_idle: " << iouParameters.sq_thread_idle << " features: " << iouParameters.features << " wq_fd: " << iouParameters.wq_fd
+             << std::endl;
    int ret = io_uring_queue_init_params(ioOptions.iodepth, &ring, &iouParameters);
    if (ret < 0) {
       throw std::logic_error("io_uring_queue_init failed, ret code = " + std::to_string(ret));
@@ -130,7 +131,7 @@ int Liburing::_spaceForPush() override {
 // -------------------------------------------------------------------------------------
 void LiburingChannel::_push(RaidRequest<LiburingIoRequest>* req)
 {
-   request_stack.push_back(req); 
+   request_stack.push_back(req);
 }
 [[maybe_unused]]
 static void print_sqe(struct io_uring_sqe *sqe) {
@@ -247,16 +248,21 @@ int LiburingChannel::_poll(int)
       //int ok = io_uring_peek_cqe(&ring, &cqe);
       unsigned int avail = 0;
       // lib-internal call, doesn't actually poll/enter the kernel, only peaks cq.
-      int ok = __io_uring_peek_cqe(&ring, &cqe, &avail);
-      posix_check(ok == 0 || ok == -EAGAIN);
-      if (!cqe || ok == -EAGAIN) {
-         // prohibit starving from not actually polling io
-         [[maybe_unused]] int submitted = io_uring_submit(&ring); // enter kernel for polling
-         assert(submitted==0);
+
+      if (done == 0) {
+         io_uring_wait_cqe(&ring, &cqe);
+      } else {
          int ok = __io_uring_peek_cqe(&ring, &cqe, &avail);
          posix_check(ok == 0 || ok == -EAGAIN);
          if (!cqe || ok == -EAGAIN) {
-            break;
+            // prohibit starving from not actually polling io
+            [[maybe_unused]] int submitted = io_uring_submit(&ring);  // enter kernel for polling
+            assert(submitted == 0);
+            int ok = __io_uring_peek_cqe(&ring, &cqe, &avail);
+            posix_check(ok == 0 || ok == -EAGAIN);
+            if (!cqe || ok == -EAGAIN) {
+               break;
+            }
          }
       }
       /*
