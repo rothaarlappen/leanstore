@@ -309,7 +309,7 @@ public:
       for (int i = 0; i < options.iodepth; i++) {
          readData[i] = rd + ((align + options.bs)*i) + 0; //(char*) IoInterface::allocIoMemoryChecked(options.bs, 1);
          writeData[i] = wd + ((align + options.bs)*i) + 0;// (char*) IoInterface::allocIoMemoryChecked(options.bs, 1);
-         memset(writeData[i], 'B', options.bs);
+         memset(writeData[i], 0, options.bs);
          memset(readData[i], 'A', options.bs);
       }
    }
