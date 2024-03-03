@@ -139,6 +139,7 @@ struct JobOptions {
       ss << ", iodepth_batch_complete_min: " << iodepth_batch_complete_min;
       ss << ", iodepth_batch_complete_max: " << iodepth_batch_complete_max;
       ss << ", fdatasync: " << fdatasync;
+      ss << ", iopattern: " << (int)ioPattern;
       ss << std::endl;
       return ss.str();
    }
@@ -309,7 +310,7 @@ public:
       for (int i = 0; i < options.iodepth; i++) {
          readData[i] = rd + ((align + options.bs)*i) + 0; //(char*) IoInterface::allocIoMemoryChecked(options.bs, 1);
          writeData[i] = wd + ((align + options.bs)*i) + 0;// (char*) IoInterface::allocIoMemoryChecked(options.bs, 1);
-         memset(writeData[i], 0, options.bs);
+         memset(writeData[i], 'B', options.bs);
          memset(readData[i], 'A', options.bs);
       }
    }
@@ -414,7 +415,7 @@ public:
             checkBufferThrow(req->data, req->addr, req->len);
          }
          auto this_ptr = req->user.user_data.as<RequestGenerator*>();
-         this_ptr->evaluateIocb(*req);
+                  this_ptr->evaluateIocb(*req);
          this_ptr->doneIds[this_ptr->doneIdsCount++] = (req->id);
       };
 
@@ -698,6 +699,7 @@ public:
             raise(SIGTRAP);
          }
       } else {
+         // req.stats.completion_time = readTSC();
          const auto thisTime = tscDifferenceNs(readTSC(), req.stats.push_time) / 1000;
          if (req.type == IoRequestType::Fsync) {
             stats.fdatasyncTotalTime += thisTime;

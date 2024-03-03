@@ -104,6 +104,8 @@ int main(int , char** ) {
    std::string filename = getEnvRequired("FILENAME");
    std::string output_dir = getEnv("OUTPUT_DIR", "");
    std::string ioEngine = getEnv("IOENGINE", "auto");
+   std::string pattern = getEnv("IOPATTERN", "random");
+
    const int threads = getEnv("THREADS",1);
    const int runtimeLimit = getEnv("RUNTIME", 0);
    long bufSize = getBytesFromString(getEnv("BS", "4K"));
@@ -138,7 +140,7 @@ int main(int , char** ) {
    std::cout << "IO_DEPTH: " << ioOptions.iodepth << std::endl;
    std::cout << "IOENGING: " << ioEngine << std::endl;
    std::cout << "OUTPUT_DIR" << output_dir << std::endl;
-   
+   std::cout << "IOPATTERN: " << pattern << std::endl;
    std::cout << "WF_ON: " << writeFreqDist << std::endl;
    //std::cout << "WF_AREA: " << writeFrequencyAreaSize*100 << "%" << std::endl;
 
@@ -152,14 +154,14 @@ int main(int , char** ) {
    JobOptions jobOptions;
    jobOptions.filesize = filesize;
    std::cout << "actual filesize = " << jobOptions.filesize << std::endl;
-   jobOptions.ioPattern = JobOptions::IoPattern::Random;
+   jobOptions.ioPattern = pattern == "random" ? JobOptions::IoPattern::Random : JobOptions::IoPattern::Sequential;
    jobOptions.disableChecks = init == "disable";
    JobStats::IoStat::dumpIoStatHeader(dump, "iodepth, bs, io_alignment,");
    dump << std::endl;
 
    jobOptions.bs = bufSize;
    jobOptions.iodepth = ioOptions.iodepth;
-   jobOptions.ioPattern = JobOptions::IoPattern::Random;
+   jobOptions.ioPattern = pattern == "random" ? JobOptions::IoPattern::Random : JobOptions::IoPattern::Sequential;
    jobOptions.io_alignment = bufSize;
    jobOptions.io_size = ioSize;
    jobOptions.writePercent = writePercent;
